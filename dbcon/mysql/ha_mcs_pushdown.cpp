@@ -126,9 +126,10 @@ create_calpont_group_by_handler(THD* thd, Query* query)
     SELECT_LEX *select_lex = query->from->select_lex;
 
     // Create a handler if query is valid. See comments for details.
-    if ( thd->infinidb_vtable.vtable_state == THD::INFINIDB_DISABLE_VTABLE
-        && ( thd->variables.infinidb_vtable_mode == 0
-            || thd->variables.infinidb_vtable_mode == 2 )
+    if ( MIGR::infinidb_vtable.vtable_state == MIGR::INFINIDB_DISABLE_VTABLE
+        // WIP MCOL-2178
+        //&& ( MIGR::infinidb_vtable_mode == 0
+        //    || MIGR::infinidb_vtable_mode == 2 )
         && ( query->group_by || select_lex->with_sum_func ) )
     {
         bool unsupported_feature = false;
@@ -193,8 +194,9 @@ create_columnstore_derived_handler(THD* thd, TABLE_LIST *derived)
 
     SELECT_LEX_UNIT *unit= derived->derived;
 
-    if ( thd->infinidb_vtable.vtable_state != THD::INFINIDB_DISABLE_VTABLE
-            && thd->variables.infinidb_vtable_mode != 0 )
+    if ( MIGR::infinidb_vtable.vtable_state != MIGR::INFINIDB_DISABLE_VTABLE )
+// WIP MCOL-2178
+//            && MIGR::infinidb_vtable_mode != 0 )
     {
         return 0;
     }
@@ -285,14 +287,14 @@ int ha_columnstore_derived_handler::init_scan()
     derived->derived->print(&derived_query, QT_ORDINARY);
 
     // Save vtable_state to restore the after we inited.
-    THD::infinidb_state oldState = thd->infinidb_vtable.vtable_state;
-    thd->infinidb_vtable.vtable_state = THD::INFINIDB_CREATE_VTABLE;
+    MIGR::infinidb_state oldState = MIGR::infinidb_vtable.vtable_state;
+    MIGR::infinidb_vtable.vtable_state = MIGR::INFINIDB_CREATE_VTABLE;
 
     mcs_handler_info mhi = mcs_handler_info(static_cast<void*>(this), DERIVED);
     // this::table is the place for the result set
     int rc = ha_cs_impl_pushdown_init(&mhi, table);
 
-    thd->infinidb_vtable.vtable_state = oldState;
+    MIGR::infinidb_vtable.vtable_state = oldState;
 
     DBUG_RETURN(rc);
 }
@@ -314,13 +316,13 @@ int ha_columnstore_derived_handler::next_row()
     DBUG_ENTER("ha_columnstore_derived_handler::next_row");
 
     // Save vtable_state to restore the after we inited.
-    THD::infinidb_state oldState = thd->infinidb_vtable.vtable_state;
+    MIGR::infinidb_state oldState = MIGR::infinidb_vtable.vtable_state;
 
-    thd->infinidb_vtable.vtable_state = THD::INFINIDB_CREATE_VTABLE;
+    MIGR::infinidb_vtable.vtable_state = MIGR::INFINIDB_CREATE_VTABLE;
 
     int rc = ha_calpont_impl_rnd_next(table->record[0], table);
 
-    thd->infinidb_vtable.vtable_state = oldState;
+    MIGR::infinidb_vtable.vtable_state = oldState;
 
     DBUG_RETURN(rc);
 }
@@ -341,12 +343,12 @@ int ha_columnstore_derived_handler::end_scan()
 {
     DBUG_ENTER("ha_columnstore_derived_handler::end_scan");
 
-    THD::infinidb_state oldState = thd->infinidb_vtable.vtable_state;
-    thd->infinidb_vtable.vtable_state = THD::INFINIDB_SELECT_VTABLE;
+    MIGR::infinidb_state oldState = MIGR::infinidb_vtable.vtable_state;
+    MIGR::infinidb_vtable.vtable_state = MIGR::INFINIDB_SELECT_VTABLE;
 
     int rc = ha_calpont_impl_rnd_end(table, true);
 
-    thd->infinidb_vtable.vtable_state = oldState;
+    MIGR::infinidb_vtable.vtable_state = oldState;
 
     DBUG_RETURN(rc);
 }
@@ -393,11 +395,11 @@ int ha_calpont_group_by_handler::init_scan()
     DBUG_ENTER("ha_calpont_group_by_handler::init_scan");
 
     // Save vtable_state to restore the after we inited.
-    THD::infinidb_state oldState = thd->infinidb_vtable.vtable_state;
+    MIGR::infinidb_state oldState = MIGR::infinidb_vtable.vtable_state;
     // MCOL-1052 Should be removed after cleaning the code up.
-    thd->infinidb_vtable.vtable_state = THD::INFINIDB_CREATE_VTABLE;
+    MIGR::infinidb_vtable.vtable_state = MIGR::INFINIDB_CREATE_VTABLE;
     int rc = ha_calpont_impl_group_by_init(this, table);
-    thd->infinidb_vtable.vtable_state = oldState;
+    MIGR::infinidb_vtable.vtable_state = oldState;
 
     DBUG_RETURN(rc);
 }
@@ -453,8 +455,9 @@ create_columnstore_select_handler(THD* thd, SELECT_LEX* select_lex)
     handlerton *ht= 0;
 
     // Return if vtable enabled.
-    if ( thd->infinidb_vtable.vtable_state != THD::INFINIDB_DISABLE_VTABLE
-            && thd->variables.infinidb_vtable_mode != 0 )
+    if ( MIGR::infinidb_vtable.vtable_state != MIGR::INFINIDB_DISABLE_VTABLE )
+// WIP MCOL-2178
+//            && MIGR::infinidb_vtable_mode != 0 )
     {
         return 0;
     }
@@ -573,14 +576,14 @@ int ha_columnstore_select_handler::init_scan()
     select->print(thd, &select_query, QT_ORDINARY);
 
     // Save vtable_state to restore the after we inited.
-    THD::infinidb_state oldState = thd->infinidb_vtable.vtable_state;
-    thd->infinidb_vtable.vtable_state = THD::INFINIDB_CREATE_VTABLE;
+    MIGR::infinidb_state oldState = MIGR::infinidb_vtable.vtable_state;
+    MIGR::infinidb_vtable.vtable_state = MIGR::INFINIDB_CREATE_VTABLE;
 
     mcs_handler_info mhi = mcs_handler_info(static_cast<void*>(this), SELECT);
     // this::table is the place for the result set
     int rc = ha_cs_impl_pushdown_init(&mhi, table);
 
-    thd->infinidb_vtable.vtable_state = oldState;
+    MIGR::infinidb_vtable.vtable_state = oldState;
 
     DBUG_RETURN(rc);
 }
@@ -602,13 +605,13 @@ int ha_columnstore_select_handler::next_row()
     DBUG_ENTER("ha_columnstore_select_handler::next_row");
 
     // Save vtable_state to restore the after we inited.
-    THD::infinidb_state oldState = thd->infinidb_vtable.vtable_state;
+    MIGR::infinidb_state oldState = MIGR::infinidb_vtable.vtable_state;
 
-    thd->infinidb_vtable.vtable_state = THD::INFINIDB_CREATE_VTABLE;
+    MIGR::infinidb_vtable.vtable_state = MIGR::INFINIDB_CREATE_VTABLE;
 
     int rc = ha_calpont_impl_rnd_next(table->record[0], table);
 
-    thd->infinidb_vtable.vtable_state = oldState;
+    MIGR::infinidb_vtable.vtable_state = oldState;
 
     DBUG_RETURN(rc);
 }
@@ -629,12 +632,12 @@ int ha_columnstore_select_handler::end_scan()
 {
     DBUG_ENTER("ha_columnstore_select_handler::end_scan");
 
-    THD::infinidb_state oldState = thd->infinidb_vtable.vtable_state;
-    thd->infinidb_vtable.vtable_state = THD::INFINIDB_SELECT_VTABLE;
+    MIGR::infinidb_state oldState = MIGR::infinidb_vtable.vtable_state;
+    MIGR::infinidb_vtable.vtable_state = MIGR::INFINIDB_SELECT_VTABLE;
 
     int rc = ha_calpont_impl_rnd_end(table, true);
 
-    thd->infinidb_vtable.vtable_state = oldState;
+    MIGR::infinidb_vtable.vtable_state = oldState;
 
     DBUG_RETURN(rc);
 }
