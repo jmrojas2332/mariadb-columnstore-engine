@@ -1,11 +1,13 @@
 [Unit]
 Description=loadbrm
-PartOf=mcs-workernode.service
 After=mcs-storagemanager.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/env bash -c "@ENGINE_BINDIR@/mcs-loadbrm.py && sleep 2" 
 
-[Install]
-WantedBy=mcs-workernode.service
+User=mysql
+Group=mysql
+LimitNOFILE=65536
+LimitNProc=65536
+
+ExecStart=/usr/bin/env bash -c "@ENGINE_BINDIR@/mcs-loadbrm.py" 
