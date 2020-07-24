@@ -1,15 +1,24 @@
 [Unit]
-Description=mariadb-columnstore
+Description=MariaDB columnstore engine
+Wants=mcs-workernode.service mcs-controllernode.service mcs-primproc.service
+Wants=mcs-writeengineserver.service mcs-exemgr.service mcs-dmlproc.service
+Wants=mcs-ddlproc.service
+After=network.target
 
 [Service]
 Type=oneshot
 
-# Execute a dummy program
+User=mysql
+Group=mysql
+LimitNOFILE=65536
+LimitNPROC=65536
+
 ExecStart=@ENGINE_BINDIR@/mariadb-columnstore-start.sh
 ExecStop=@ENGINE_BINDIR@/mariadb-columnstore-stop.sh
 
 # This service shall be considered active after start
 RemainAfterExit=yes
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

@@ -1,10 +1,17 @@
 [Unit]
-Description=mcs-ddlproc
+Description=MariaDB columnstore engine DDLProc
 PartOf=mcs-writeengineserver.service
 After=mcs-dmlproc.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/env bash -c "/bin/sleep 2 && @ENGINE_BINDIR@/DDLProc"
+
+User=mysql
+Group=mysql
+LimitNOFILE=65536
+LimitNProc=65536
+
+ExecStart=@ENGINE_BINDIR@/DDLProc
+
 Restart=on-failure
-TimeoutStopSec=2
+TimeoutStopSec=5
