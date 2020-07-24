@@ -1,12 +1,17 @@
 [Unit]
-Description=mcs-primproc
-PartOf=mcs-workernode.service
-PartOf=mcs-controllernode.service
+Description=MariaDB columnstore engine PrimProc
+PartOf=mcs-workernode.service mcs-controllernode.service
 After=mcs-controllernode.service
 
 [Service]
 Type=simple
+
+User=mysql
+Group=mysql
+LimitNOFILE=65536
+LimitNProc=65536
+
 ExecStart=/usr/bin/env bash -c "LD_PRELOAD=$(ldconfig -p | grep -m1 libjemalloc | awk '{print $1}') exec @ENGINE_BINDIR@/PrimProc"
-ExecStartPost=/bin/sleep 2
+
 Restart=on-failure
-TimeoutStopSec=2
+TimeoutStopSec=5
