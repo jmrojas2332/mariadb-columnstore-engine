@@ -1,7 +1,5 @@
 [Unit]
 Description=MariaDB columnstore engine workernode
-Wants=mcs-loadbrm.service
-After=mcs-loadbrm.service
 
 [Service]
 Type=simple
@@ -9,8 +7,9 @@ Type=simple
 User=mysql
 Group=mysql
 LimitNOFILE=65536
-LimitNProc=65536
+LimitNPROC=65536
 
+ExecStartPre=@ENGINE_BINDIR@/mcs-loadbrm.py
 ExecStart=@ENGINE_BINDIR@/workernode DBRM_Worker1 fg
 ExecStopPost=-@ENGINE_BINDIR@/mcs-savebrm.py
 ExecStopPost=/usr/bin/env bash -c "clearShm > /dev/null 2>&1"

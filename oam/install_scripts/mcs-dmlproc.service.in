@@ -1,5 +1,7 @@
 [Unit]
 Description=MariaDB columnstore engine DMLProc
+
+# restart/stop dmlproc on restart/stop of writeengineserver
 PartOf=mcs-writeengineserver.service
 After=mcs-writeengineserver.service
 
@@ -9,7 +11,7 @@ Type=simple
 User=mysql
 Group=mysql
 LimitNOFILE=65536
-LimitNProc=65536
+LimitNPROC=65536
 
 ExecStart=@ENGINE_BINDIR@/DMLProc
 
