@@ -1,9 +1,7 @@
 [Unit]
 Description=MariaDB columnstore engine
-Wants=mcs-workernode.service mcs-controllernode.service mcs-primproc.service
-Wants=mcs-writeengineserver.service mcs-exemgr.service mcs-dmlproc.service
-Wants=mcs-ddlproc.service
 After=network.target
+Wants=mcs-workernode.service
 
 [Service]
 Type=oneshot
@@ -13,12 +11,12 @@ Group=mysql
 LimitNOFILE=65536
 LimitNPROC=65536
 
-ExecStart=@ENGINE_BINDIR@/mariadb-columnstore-start.sh
-ExecStop=@ENGINE_BINDIR@/mariadb-columnstore-stop.sh
+# This systemd unit is used to manage all MariaDB columnstore systemd units
+# Call dummy program
+ExecStart=/bin/true
 
 # This service shall be considered active after start
 RemainAfterExit=yes
-Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

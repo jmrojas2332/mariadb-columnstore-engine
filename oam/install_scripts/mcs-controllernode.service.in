@@ -1,7 +1,7 @@
 [Unit]
 Description=MariaDB columnstore engine controllernode
-PartOf=mcs-workernode.service
-After=mcs-workernode.service
+Wants=primproc.service mcs-writeengineserver.service mcs-exemgr.service
+Wants=mcs-dmlproc.service mcs-ddlproc.service
 
 [Service]
 Type=simple
@@ -9,8 +9,10 @@ Type=simple
 User=mysql
 Group=mysql
 LimitNOFILE=65536
-LimitNProc=65536
+LimitNPROC=65536
 
 ExecStart=@ENGINE_BINDIR@/controllernode fg
 ExecStop=@ENGINE_BINDIR@/mcs-stop-controllernode.sh $MAINPID
 Restart=on-failure
+
+StandardInput=socket

@@ -141,6 +141,8 @@ if [ $user = "root" ]; then
         cp @ENGINE_SUPPORTDIR@/mariadb-columnstore.service /lib/systemd/system/. >/dev/null 2>&1
         cp @ENGINE_SUPPORTDIR@/mcs-controllernode.service /usr/lib/systemd/system/. >/dev/null 2>&1
         cp @ENGINE_SUPPORTDIR@/mcs-controllernode.service /lib/systemd/system/. >/dev/null 2>&1
+        cp @ENGINE_SUPPORTDIR@/mcs-controllernode.socket /usr/lib/systemd/system/. >/dev/null 2>&1
+        cp @ENGINE_SUPPORTDIR@/mcs-controllernode.socket /lib/systemd/system/. >/dev/null 2>&1
         cp @ENGINE_SUPPORTDIR@/mcs-ddlproc.service /usr/lib/systemd/system/. >/dev/null 2>&1
         cp @ENGINE_SUPPORTDIR@/mcs-ddlproc.service /lib/systemd/system/. >/dev/null 2>&1
         cp @ENGINE_SUPPORTDIR@/mcs-dmlproc.service /usr/lib/systemd/system/. >/dev/null 2>&1
@@ -159,16 +161,17 @@ if [ $user = "root" ]; then
         cp @ENGINE_SUPPORTDIR@/mcs-storagemanager.service /lib/systemd/system/. >/dev/null 2>&1
 
 
-        systemctl enable mariadb-columnstore >/dev/null 2>&1
-        systemctl enable mcs-controllernode > /dev/null 2>&1
-        systemctl enable mcs-ddlproc > /dev/null 2>&1
-        systemctl enable mcs-dmlproc > /dev/null 2>&1
-        systemctl enable mcs-exemgr > /dev/null 2>&1
-        systemctl enable mcs-primproc > /dev/null 2>&1
-        systemctl enable mcs-workernode > /dev/null 2>&1
-        systemctl enable mcs-writeengineserver > /dev/null 2>&1
-        systemctl enable mcs-loadbrm > /dev/null 2>&1
-        systemctl enable mcs-storagemanager > /dev/null 2>&1
+        systemctl enable --user mariadb-columnstore >/dev/null 2>&1
+        systemctl enable --user mcs-controllernode.service > /dev/null 2>&1
+        systemctl enable --user mcs-controllernode.socket > /dev/null 2>&1
+        systemctl enable --user mcs-ddlproc > /dev/null 2>&1
+        systemctl enable --user mcs-dmlproc > /dev/null 2>&1
+        systemctl enable --user mcs-exemgr > /dev/null 2>&1
+        systemctl enable --user mcs-primproc > /dev/null 2>&1
+        systemctl enable --user mcs-workernode > /dev/null 2>&1
+        systemctl enable --user mcs-writeengineserver > /dev/null 2>&1
+        systemctl enable --user mcs-loadbrm > /dev/null 2>&1
+        systemctl enable --user mcs-storagemanager > /dev/null 2>&1
     else
         chkconfig=`which chkconfig 2>/dev/null`
         if [ -n "$chkconfig" ]; then
@@ -295,6 +298,7 @@ chmod 777 /dev/shm
 systemctl cat mariadb-columnstore.service > /dev/null 2>&1
 if [ $? -eq 0 ] && [ $(running_systemd) -eq 0 ]; then
     echo "Populating the engine initial system catalog."
+    systemctl start mcs-controllernode.socket
     systemctl start mariadb-columnstore
     sleep 5
     dbbuilder 7 > $tmpDir/dbbuilder.log 2>&1
