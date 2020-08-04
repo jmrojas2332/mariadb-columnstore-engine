@@ -4,10 +4,6 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import time
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 import configparser
 import os
 
